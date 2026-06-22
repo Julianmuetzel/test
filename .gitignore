@@ -39,4 +39,7 @@ modelfiles
 site
 
 # commit file ignore
-app/commit.jsondeploy-*.zip
+app/commit.json
+
+# Netlify deploy artifacts
+deploy-*.zip
