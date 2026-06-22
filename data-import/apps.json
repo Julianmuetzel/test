@@ -1,0 +1,145 @@
+{
+  "_meta": {
+    "description": "Structured, verified data about event/festival apps requested for import.",
+    "target_collection": "competitor_apps",
+    "generated_at": "2026-06-22",
+    "verification_policy": "Only facts confirmed from cited public sources are included. Unverified fields are null. No data is fabricated.",
+    "natural_key": "slug"
+  },
+  "records": [
+    {
+      "slug": "fest-app",
+      "name": "FEST App",
+      "category": "Festival & event app (organizer SaaS + attendee discovery)",
+      "description": "FEST App brings festivals together with simple technology for teams and audiences. Attendees discover festivals, artists, lineups, schedules and tickets worldwide; organizers manage schedules, artists, maps, notifications and more from a single web ecosystem (Backstage). Replaces paper programs and improves attendee engagement.",
+      "website": "https://festapp.io/",
+      "platforms": ["web", "android", "ios"],
+      "target_market": "Festival, conference and event organizers and their attendees; worldwide",
+      "company": {
+        "name": "FEST App Technology",
+        "linkedin": "https://www.linkedin.com/company/fest-app-technology",
+        "open_source_repo": "https://github.com/vkh-cr/festapp"
+      },
+      "founded_year": null,
+      "founders": [],
+      "headquarters": null,
+      "funding": null,
+      "pricing": {
+        "model": "freemium / SaaS",
+        "tiers": ["Free", "Pro", "Premium"],
+        "notes": "Free plan as a first step; Pro and Premium add stronger partner visibility, advanced maps, multilingual content, statistics, app store featuring and web integrations."
+      },
+      "features": [
+        "Interactive venue/stage maps",
+        "Real-time schedule management",
+        "Push notifications (schedule changes, announcements, offers)",
+        "Workshop/lecture sign-ups with limited capacity",
+        "Offline access to event information",
+        "Artists, places, FAQ, partners management",
+        "Ticketing and cashless links",
+        "Playlists and sponsor modules",
+        "Backstage organizer dashboard",
+        "Wix add-on to sync artists/schedules/events/places to festival website"
+      ],
+      "partner_festivals": [
+        "Pop Montréal (CA)",
+        "Sonorama Ribera (ES)",
+        "Reperkusound (FR)",
+        "Plages Électroniques (FR)"
+      ],
+      "app_ids": {},
+      "sources": [
+        "https://festapp.io/",
+        "https://festapp.io/organizers",
+        "https://festapp.io/blog/how-much-festival-app-cost-2026",
+        "https://github.com/vkh-cr/festapp",
+        "https://www.linkedin.com/company/fest-app-technology"
+      ],
+      "verification": {
+        "status": "verified_public_web",
+        "fetched_at": "2026-06-22",
+        "notes": "Confirmed from official site and organizer/pricing pages. Company financials/founders not publicly stated."
+      }
+    },
+    {
+      "slug": "highape",
+      "name": "HighApe",
+      "category": "Events discovery & ticket booking platform",
+      "description": "India's go-out / events discovery platform. Helps users find local experiences by interest, location and social circle, filter and book tickets, and chat with others to plan outings. Started with nightlife and expanded to DJ nights, concerts, activities, travel, treks, workshops, food & drinks and more.",
+      "website": "https://highape.com/",
+      "platforms": ["web", "android", "ios"],
+      "target_market": "India — major cities incl. Bangalore, Delhi-NCR, Mumbai, Hyderabad",
+      "company": {
+        "name": "HighApe",
+        "yourstory": "https://yourstory.com/companies/highape",
+        "crunchbase": "https://www.crunchbase.com/organization/highape"
+      },
+      "founded_year": 2015,
+      "founders": ["Prasun Kumar", "Aman DS", "Prasun Dubey"],
+      "headquarters": "Bengaluru, India",
+      "funding": {
+        "total_approx_usd": 137000,
+        "investors": ["Harmony", "Palanca Capital", "angel investors"],
+        "notes": "Bootstrapped for the first two years with positive unit economics, then raised from angels. Figures per third-party profiles; verify before relying on them."
+      },
+      "pricing": {
+        "model": "free app; transactional (ticket booking commissions)",
+        "tiers": [],
+        "notes": "App is free to download; revenue via ticketing/bookings."
+      },
+      "features": [
+        "Event discovery with filters",
+        "In-app ticket booking",
+        "Multi-city coverage",
+        "Social discovery / chat to plan outings",
+        "Broad categories (nightlife, concerts, activities, travel, workshops, food & drinks)"
+      ],
+      "partner_festivals": [],
+      "app_ids": {
+        "android_package": "com.highape.highape",
+        "ios_app_store": ["id6503872819", "id1435908839"]
+      },
+      "sources": [
+        "https://highape.com/",
+        "https://play.google.com/store/apps/details?id=com.highape.highape",
+        "https://apps.apple.com/in/app/highape-discover-top-events/id6503872819",
+        "https://yourstory.com/companies/highape",
+        "https://tracxn.com/d/companies/highape",
+        "https://www.crunchbase.com/organization/highape",
+        "https://inc42.com/company/highape/"
+      ],
+      "verification": {
+        "status": "verified_public_web",
+        "fetched_at": "2026-06-22",
+        "notes": "Product facts confirmed from official site and app stores. Founder/funding figures come from third-party databases and are flagged for double-checking."
+      }
+    },
+    {
+      "slug": "whatup-event-planner",
+      "name": "WhatsUp Event Planner (unconfirmed)",
+      "category": null,
+      "description": null,
+      "website": null,
+      "platforms": ["android"],
+      "target_market": null,
+      "company": {},
+      "founded_year": null,
+      "founders": [],
+      "headquarters": null,
+      "funding": null,
+      "pricing": null,
+      "features": [],
+      "partner_festivals": [],
+      "app_ids": {
+        "android_package": "com.whatup.eventplanner",
+        "play_store_url": "https://play.google.com/store/apps/details?id=com.whatup.eventplanner&hl=de"
+      },
+      "sources": [],
+      "verification": {
+        "status": "unverified_not_found",
+        "fetched_at": "2026-06-22",
+        "notes": "Direct Play Store fetch returned HTTP 403; web search could not locate this exact package id. The app may be delisted/region-locked or the package id may be incorrect. No data fabricated. ACTION NEEDED: confirm the correct Play Store URL/package id, then re-run the importer to enrich this record."
+      }
+    }
+  ]
+}
