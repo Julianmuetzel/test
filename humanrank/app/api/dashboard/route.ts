@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { supabase } from "@/lib/db";
 import { computeHumanScore } from "@/lib/ranking";
 
 export async function GET() {
@@ -12,20 +12,37 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  const [user, rankings, recentResults] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId } }),
-    prisma.ranking.findMany({
-      where: { userId },
-      include: { test: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.testResult.findMany({
-      where: { userId },
-      include: { test: true },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
+  const [userRes, rankingsRes, recentResultsRes] = await Promise.all([
+    supabase.from("users").select("*").eq("id", userId).maybeSingle(),
+    supabase
+      .from("rankings")
+      .select("testId, bestScore, percentileGlobal, globalRank, tests(id, slug, name, unit, category)")
+      .eq("userId", userId)
+      .order("updatedAt", { ascending: false }),
+    supabase
+      .from("test_results")
+      .select("id, score, createdAt, tests(name, slug, unit)")
+      .eq("userId", userId)
+      .order("createdAt", { ascending: false })
+      .limit(10),
   ]);
+
+  const user = userRes.data;
+  type RankingRow = {
+    testId: string;
+    bestScore: number;
+    percentileGlobal: number | null;
+    globalRank: number | null;
+    tests: { id: string; slug: string; name: string; unit: string; category: string } | null;
+  };
+  type ResultRow = {
+    id: string;
+    score: number;
+    createdAt: string;
+    tests: { name: string; slug: string; unit: string } | null;
+  };
+  const rankings = (rankingsRes.data ?? []) as unknown as RankingRow[];
+  const recentResults = (recentResultsRes.data ?? []) as unknown as ResultRow[];
 
   const humanScore = await computeHumanScore(userId);
 
@@ -34,10 +51,10 @@ export async function GET() {
     humanScore,
     rankings: rankings.map((r) => ({
       testId: r.testId,
-      testSlug: r.test.slug,
-      testName: r.test.name,
-      testUnit: r.test.unit,
-      testIcon: r.test.category,
+      testSlug: r.tests?.slug ?? "",
+      testName: r.tests?.name ?? "",
+      testUnit: r.tests?.unit ?? "",
+      testIcon: r.tests?.category ?? "",
       bestScore: r.bestScore,
       percentileGlobal: r.percentileGlobal,
       globalRank: r.globalRank,
@@ -46,7 +63,7 @@ export async function GET() {
       id: r.id,
       score: r.score,
       createdAt: r.createdAt,
-      test: { name: r.test.name, slug: r.test.slug, unit: r.test.unit },
+      test: { name: r.tests?.name ?? "", slug: r.tests?.slug ?? "", unit: r.tests?.unit ?? "" },
     })),
     streak: user?.streak ?? 0,
     xp: user?.xp ?? 0,

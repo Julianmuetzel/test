@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { supabase } from "@/lib/db";
 import { updateUserRanking, computeHumanScore } from "@/lib/ranking";
 
 const XP_PER_TEST = 15;
@@ -17,26 +17,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
   }
 
-  const test = await prisma.test.findUnique({ where: { slug: testSlug } });
+  const { data: test } = await supabase
+    .from("tests")
+    .select("id")
+    .eq("slug", testSlug)
+    .maybeSingle();
   if (!test) {
     return NextResponse.json({ error: "Test nicht gefunden." }, { status: 404 });
   }
 
   const userId = session.user.id;
+  const now = new Date();
 
-  await prisma.testResult.create({
-    data: { userId, testId: test.id, score, metadata },
+  await supabase.from("test_results").insert({
+    id: crypto.randomUUID(),
+    userId,
+    testId: test.id,
+    score,
+    metadata: metadata ?? null,
+    createdAt: now.toISOString(),
   });
 
   await updateUserRanking(userId, test.id, score);
 
-  const today = new Date();
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const { data: user } = await supabase
+    .from("users")
+    .select("streak, lastTestDate, xp")
+    .eq("id", userId)
+    .maybeSingle();
+
   let newStreak = user?.streak ?? 0;
 
   if (user?.lastTestDate) {
     const lastDate = new Date(user.lastTestDate);
-    const diff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+    const diff = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
     if (diff === 1) {
       newStreak += 1;
     } else if (diff > 1) {
@@ -49,15 +63,25 @@ export async function POST(req: NextRequest) {
   const newXp = (user?.xp ?? 0) + XP_PER_TEST;
   const newLevel = Math.floor(1 + Math.sqrt(newXp / 50));
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { xp: newXp, level: newLevel, streak: newStreak, lastTestDate: today },
-  });
+  await supabase
+    .from("users")
+    .update({
+      xp: newXp,
+      level: newLevel,
+      streak: newStreak,
+      lastTestDate: now.toISOString(),
+      updatedAt: now.toISOString(),
+    })
+    .eq("id", userId);
 
   const humanScore = await computeHumanScore(userId);
-  const ranking = await prisma.ranking.findUnique({
-    where: { userId_testId: { userId, testId: test.id } },
-  });
+
+  const { data: ranking } = await supabase
+    .from("rankings")
+    .select("percentileGlobal")
+    .eq("userId", userId)
+    .eq("testId", test.id)
+    .maybeSingle();
 
   return NextResponse.json({
     success: true,

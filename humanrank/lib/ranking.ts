@@ -1,4 +1,4 @@
-import { prisma } from "./db";
+import { supabase } from "./db";
 
 export const TEST_WEIGHTS: Record<string, number> = {
   "reaction-time": 0.20,
@@ -14,14 +14,14 @@ export async function calculatePercentile(
   score: number,
   higherIsBetter: boolean
 ): Promise<number> {
-  const all = await prisma.ranking.findMany({
-    where: { testId },
-    select: { bestScore: true },
-  });
+  const { data: all } = await supabase
+    .from("rankings")
+    .select("bestScore")
+    .eq("testId", testId);
 
-  if (all.length === 0) return 50;
+  if (!all || all.length === 0) return 50;
 
-  const scores = all.map((r) => r.bestScore);
+  const scores = all.map((r: { bestScore: number }) => r.bestScore);
   const below = higherIsBetter
     ? scores.filter((s) => s < score).length
     : scores.filter((s) => s > score).length;
@@ -34,12 +34,19 @@ export async function updateUserRanking(
   testId: string,
   score: number
 ): Promise<void> {
-  const test = await prisma.test.findUnique({ where: { id: testId } });
+  const { data: test } = await supabase
+    .from("tests")
+    .select("higherIsBetter")
+    .eq("id", testId)
+    .maybeSingle();
   if (!test) return;
 
-  const existing = await prisma.ranking.findUnique({
-    where: { userId_testId: { userId, testId } },
-  });
+  const { data: existing } = await supabase
+    .from("rankings")
+    .select("id, bestScore")
+    .eq("userId", userId)
+    .eq("testId", testId)
+    .maybeSingle();
 
   const isBetter = existing
     ? test.higherIsBetter
@@ -50,27 +57,50 @@ export async function updateUserRanking(
   if (!isBetter) return;
 
   const percentileGlobal = await calculatePercentile(testId, score, test.higherIsBetter);
+  const now = new Date().toISOString();
 
-  await prisma.ranking.upsert({
-    where: { userId_testId: { userId, testId } },
-    update: { bestScore: score, percentileGlobal, updatedAt: new Date() },
-    create: { userId, testId, bestScore: score, percentileGlobal },
-  });
+  if (existing) {
+    await supabase
+      .from("rankings")
+      .update({ bestScore: score, percentileGlobal, updatedAt: now })
+      .eq("id", existing.id);
+  } else {
+    await supabase.from("rankings").insert({
+      id: crypto.randomUUID(),
+      userId,
+      testId,
+      bestScore: score,
+      percentileGlobal,
+      updatedAt: now,
+    });
+  }
 }
 
 export async function computeHumanScore(userId: string): Promise<number> {
-  const rankings = await prisma.ranking.findMany({
-    where: { userId },
-    include: { test: true },
-  });
+  const { data: rankings } = await supabase
+    .from("rankings")
+    .select("percentileGlobal, testId")
+    .eq("userId", userId);
 
-  if (rankings.length === 0) return 0;
+  if (!rankings || rankings.length === 0) return 0;
+
+  const testIds = rankings.map((r: { testId: string }) => r.testId);
+  const { data: tests } = await supabase
+    .from("tests")
+    .select("id, slug")
+    .in("id", testIds);
+
+  const slugMap: Record<string, string> = {};
+  for (const t of tests ?? []) {
+    slugMap[t.id] = t.slug;
+  }
 
   let totalWeight = 0;
   let weightedSum = 0;
 
-  for (const r of rankings) {
-    const weight = TEST_WEIGHTS[r.test.slug] ?? 0.1;
+  for (const r of rankings as { testId: string; percentileGlobal: number | null }[]) {
+    const slug = slugMap[r.testId] ?? "";
+    const weight = TEST_WEIGHTS[slug] ?? 0.1;
     const percentile = r.percentileGlobal ?? 50;
     weightedSum += percentile * weight;
     totalWeight += weight;

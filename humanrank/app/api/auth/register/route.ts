@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
+import { supabase } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,34 +18,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Passwort: mindestens 8 Zeichen." }, { status: 400 });
     }
 
-    const existing = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: email.toLowerCase() },
-          { username: username.toLowerCase() },
-        ],
-      },
-    });
+    const { data: byEmail } = await supabase
+      .from("users")
+      .select("email, username")
+      .eq("email", email.toLowerCase())
+      .maybeSingle();
 
-    if (existing) {
-      if (existing.email === email.toLowerCase()) {
-        return NextResponse.json({ error: "E-Mail bereits registriert." }, { status: 409 });
-      }
+    const { data: byUsername } = await supabase
+      .from("users")
+      .select("username")
+      .eq("username", username.toLowerCase())
+      .maybeSingle();
+
+    if (byEmail) {
+      return NextResponse.json({ error: "E-Mail bereits registriert." }, { status: 409 });
+    }
+    if (byUsername) {
       return NextResponse.json({ error: "Benutzername bereits vergeben." }, { status: 409 });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
+    const now = new Date().toISOString();
+    const id = crypto.randomUUID();
 
-    const user = await prisma.user.create({
-      data: {
+    const { data: user, error } = await supabase
+      .from("users")
+      .insert({
+        id,
         email: email.toLowerCase(),
         username: username.toLowerCase(),
         passwordHash,
         age: age ? parseInt(age) : null,
         gender: gender || null,
         country: country || null,
-      },
-    });
+        createdAt: now,
+        updatedAt: now,
+      })
+      .select("id, username")
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ id: user.id, username: user.username }, { status: 201 });
   } catch (err) {
