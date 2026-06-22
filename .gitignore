@@ -39,4 +39,4 @@ modelfiles
 site
 
 # commit file ignore
-app/commit.json
+app/commit.jsondeploy-*.zip
