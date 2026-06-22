@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String
+  age           Int?
+  gender        String?
+  country       String?
+  avatarUrl     String?
+  isPrivate     Boolean   @default(false)
+  isPremium     Boolean   @default(false)
+  xp            Int       @default(0)
+  level         Int       @default(1)
+  streak        Int       @default(0)
+  lastTestDate  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  testResults   TestResult[]
+  rankings      Ranking[]
+  achievements  UserAchievement[]
+  friendsA      Friendship[]     @relation("FriendA")
+  friendsB      Friendship[]     @relation("FriendB")
+
+  @@map("users")
+}
+
+model Test {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  description    String
+  category       String
+  unit           String
+  higherIsBetter Boolean  @default(true)
+  xpReward       Int      @default(10)
+  createdAt      DateTime @default(now())
+
+  results        TestResult[]
+  rankings       Ranking[]
+
+  @@map("tests")
+}
+
+model TestResult {
+  id        String   @id @default(cuid())
+  userId    String
+  testId    String
+  score     Float
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test      Test     @relation(fields: [testId], references: [id])
+
+  @@map("test_results")
+}
+
+model Ranking {
+  id               String   @id @default(cuid())
+  userId           String
+  testId           String
+  bestScore        Float
+  percentileGlobal Float?
+  percentileAge    Float?
+  percentileGender Float?
+  percentileCountry Float?
+  globalRank       Int?
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test             Test     @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId])
+  @@map("rankings")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  icon        String
+  condition   Json
+  createdAt   DateTime @default(now())
+
+  users       UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userAId   String
+  userBId   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  userA     User     @relation("FriendA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB     User     @relation("FriendB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@map("friendships")
+}
+
+model GlobalStatistic {
+  id        String   @id @default(cuid())
+  testId    String   @unique
+  mean      Float
+  stdDev    Float
+  median    Float
+  p10       Float
+  p25       Float
+  p75       Float
+  p90       Float
+  p95       Float
+  p99       Float
+  count     Int
+  updatedAt DateTime @updatedAt
+
+  @@map("global_statistics")
+}
