@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd humanrank && npm run build",
-  "installCommand": "cd humanrank && npm install",
-  "outputDirectory": "humanrank/.next",
-  "framework": "nextjs"
-}
