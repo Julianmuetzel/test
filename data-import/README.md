@@ -26,7 +26,6 @@ Credentials are read from `MONGODB_URI` (env var) — never hardcode them.
 |---|---|---|
 | FEST App (festapp.io) | ✅ verified | Official site + organizer/pricing pages |
 | HighApe (highape.com) | ✅ verified | Official site + app stores; founder/funding from 3rd-party DBs (flagged) |
-| `com.whatup.eventplanner` | ⚠️ not found | Play Store fetch 403 + package not locatable; needs correct URL/package id |
 
 ## Open blockers (need your action)
 1. **Network egress:** outbound port `27017` to MongoDB Atlas times out in this
@@ -35,5 +34,3 @@ Credentials are read from `MONGODB_URI` (env var) — never hardcode them.
    run the importer from a host whose IP is in the Atlas IP allowlist.
 2. **Credentials:** the password shared in chat must be treated as compromised —
    rotate it in Atlas and use the new one via `MONGODB_URI`.
-3. **WhatsUp app:** confirm the correct Play Store URL / package id so its record
-   can be enriched and verified.

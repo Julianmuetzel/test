@@ -113,33 +113,6 @@
         "fetched_at": "2026-06-22",
         "notes": "Product facts confirmed from official site and app stores. Founder/funding figures come from third-party databases and are flagged for double-checking."
       }
-    },
-    {
-      "slug": "whatup-event-planner",
-      "name": "WhatsUp Event Planner (unconfirmed)",
-      "category": null,
-      "description": null,
-      "website": null,
-      "platforms": ["android"],
-      "target_market": null,
-      "company": {},
-      "founded_year": null,
-      "founders": [],
-      "headquarters": null,
-      "funding": null,
-      "pricing": null,
-      "features": [],
-      "partner_festivals": [],
-      "app_ids": {
-        "android_package": "com.whatup.eventplanner",
-        "play_store_url": "https://play.google.com/store/apps/details?id=com.whatup.eventplanner&hl=de"
-      },
-      "sources": [],
-      "verification": {
-        "status": "unverified_not_found",
-        "fetched_at": "2026-06-22",
-        "notes": "Direct Play Store fetch returned HTTP 403; web search could not locate this exact package id. The app may be delisted/region-locked or the package id may be incorrect. No data fabricated. ACTION NEEDED: confirm the correct Play Store URL/package id, then re-run the importer to enrich this record."
-      }
     }
   ]
 }
