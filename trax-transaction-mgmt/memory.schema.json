@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Julianmuetzel/Trax/blob/main/memory.schema.json",
+  "title": "TRAX Transaktions-Gedächtnis",
+  "description": "Strukturiertes Gedächtnisprotokoll für eine einzelne Immobilientransaktion im TRAX-System.",
+  "type": "object",
+  "required": ["transaktion_id", "objekt", "transaktion", "parteien"],
+  "additionalProperties": false,
+  "properties": {
+    "transaktion_id": {
+      "type": "string",
+      "description": "Eindeutige Kennung, z. B. TXN-2025-001.",
+      "pattern": "^TXN-[0-9]{4}-[0-9]{3}$"
+    },
+    "objekt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bezeichnung": { "type": "string" },
+        "adresse": { "type": "string" },
+        "typ": {
+          "type": "string",
+          "enum": ["Büro", "Einzelhandel", "Wohnen", "Logistik", "Hotel", "Mixed-Use", "Sonstige"]
+        },
+        "nutzflaeche_qm": { "type": ["number", "null"], "minimum": 0 },
+        "baujahr": { "type": ["integer", "null"] },
+        "zustand": { "type": "string" },
+        "ist_geteilt": { "type": "boolean", "default": false }
+      }
+    },
+    "transaktion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "typ": {
+          "type": "string",
+          "enum": ["Ankauf", "Verkauf", "Forward Deal", "Sale & Leaseback", "Portfolio"]
+        },
+        "phase": {
+          "type": "string",
+          "enum": ["Akquisition", "LOI", "Due Diligence", "Notarisierung", "Closing", "Post-Closing"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Aktiv", "Pausiert", "Abgebrochen", "Geschlossen"]
+        },
+        "kaufpreis_indikativ": { "type": ["number", "null"], "minimum": 0 },
+        "kaufpreis_final": { "type": ["number", "null"], "minimum": 0 },
+        "rendite_indikativ": { "type": ["number", "null"] },
+        "signing_datum": { "type": ["string", "null"], "format": "date" },
+        "closing_datum": { "type": ["string", "null"], "format": "date" },
+        "eigentumsuebergang_datum": { "type": ["string", "null"], "format": "date" }
+      }
+    },
+    "parteien": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "verkaeufer": { "$ref": "#/$defs/partei" },
+        "kaeufer": { "$ref": "#/$defs/partei" },
+        "makler": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "ansprechpartner": { "type": "string" },
+            "provision": { "type": "string" }
+          }
+        },
+        "notar": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "kanzlei": { "type": "string" },
+            "kontakt": { "type": "string" }
+          }
+        },
+        "gutachter": { "type": "array", "items": { "type": "string" } },
+        "finanzierer": { "type": "array", "items": { "type": "string" } },
+        "externe_berater": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "aufgaben": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/aufgabe" }
+    },
+    "dokumente": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dokument" }
+    },
+    "meilensteine": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/meilenstein" }
+    },
+    "kommunikation": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/kommunikation" }
+    },
+    "risiken": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/risiko" }
+    },
+    "notizen": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "letzte_aktualisierung": { "type": "string", "format": "date-time" },
+    "naechster_meilenstein": { "type": "string" },
+    "ampelstatus": {
+      "type": "string",
+      "enum": ["Grün", "Gelb", "Rot"]
+    }
+  },
+  "$defs": {
+    "partei": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "ansprechpartner": { "type": "string" },
+        "kontakt": { "type": "string" },
+        "berater": { "type": "string" }
+      }
+    },
+    "aufgabe": {
+      "type": "object",
+      "required": ["beschreibung", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "beschreibung": { "type": "string" },
+        "kategorie": {
+          "type": "string",
+          "enum": ["Legal", "Commercial", "Finance", "Technical", "Admin", "ESG"]
+        },
+        "verantwortlicher": { "type": "string" },
+        "prioritaet": { "type": "string", "enum": ["Hoch", "Mittel", "Niedrig"] },
+        "deadline": { "type": ["string", "null"], "format": "date" },
+        "status": { "type": "string", "enum": ["Offen", "In Arbeit", "Erledigt", "Überfällig"] },
+        "quelldokument": { "type": "string" }
+      }
+    },
+    "dokument": {
+      "type": "object",
+      "required": ["name", "typ"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "typ": {
+          "type": "string",
+          "enum": [
+            "Kaufvertrag", "LOI", "Term Sheet", "DD-Bericht", "Mietvertrag",
+            "Finanzierungsvertrag", "Notarielle Urkunde", "Gutachten",
+            "E-Mail", "Protokoll", "Sonstige"
+          ]
+        },
+        "datum": { "type": ["string", "null"], "format": "date" },
+        "version": { "type": "string" },
+        "ablageort": { "type": "string" }
+      }
+    },
+    "meilenstein": {
+      "type": "object",
+      "required": ["bezeichnung"],
+      "additionalProperties": false,
+      "properties": {
+        "bezeichnung": { "type": "string" },
+        "datum": { "type": ["string", "null"], "format": "date" },
+        "erreicht": { "type": "boolean", "default": false }
+      }
+    },
+    "kommunikation": {
+      "type": "object",
+      "required": ["datum", "kanal"],
+      "additionalProperties": false,
+      "properties": {
+        "datum": { "type": "string", "format": "date-time" },
+        "kanal": { "type": "string", "enum": ["E-Mail", "Telefon", "Meeting", "Brief", "Sonstige"] },
+        "von": { "type": "string" },
+        "an": { "type": "string" },
+        "betreff": { "type": "string" },
+        "zusammenfassung": { "type": "string" }
+      }
+    },
+    "risiko": {
+      "type": "object",
+      "required": ["beschreibung", "kategorie", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "kategorie": {
+          "type": "string",
+          "enum": ["Legal", "Financial", "Technical", "Market", "ESG", "Regulatory", "Counterparty", "Timing"]
+        },
+        "beschreibung": { "type": "string" },
+        "wahrscheinlichkeit": { "type": "string", "enum": ["Niedrig", "Mittel", "Hoch"] },
+        "impact": { "type": "string", "enum": ["Niedrig", "Mittel", "Hoch"] },
+        "status": { "type": "string", "enum": ["Offen", "In Bearbeitung", "Eskaliert", "Geschlossen"] },
+        "massnahme": { "type": "string" }
+      }
+    }
+  }
+}
